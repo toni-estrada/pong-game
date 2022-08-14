@@ -10,7 +10,7 @@ collision_cooldown = .15
 
 left_paddle = Entity(model="quad", scale=(1 / 32, 6 / 32), x=-.80, origin_x=.5, collider="box")
 right_paddle = duplicate(left_paddle, x=left_paddle.x * -1, )
-ball = Entity(model="circle", scale=.05, collider="box", speed=0, collision_cooldown=collision_cooldown)
+ball = Entity(model="circle", scale=.05, collider="box", speed=10, collision_cooldown=collision_cooldown)
 
 floor = Entity(model="quad", y=-.5, origin_y=.49, scale=(2, 1), collider="box", )
 ceiling = duplicate(floor, y=floor.y * -1, rotation_z=180)
@@ -27,6 +27,30 @@ def update():
 
     if ball.collision_cooldown < 0:
         return
+
+    hit_info = ball.intersects()
+    if hit_info.hit():
+        ball.collision_cooldown = collision_cooldown
+
+        if hit_info.entity in (left_paddle, right_paddle, left_wall, right_wall):
+            hit_info.entity.collision = False
+            invoke(setattr, hit_info.entity, "collision", False, delay=.1)
+            if hit_info.entity == left_paddle:
+                direction_multiplier = -1
+
+                left_paddle.collision = False
+                right_paddle.collision = True
+            else:
+                right_paddle.collision = False
+                left_paddle.collision = True
+
+            ball.rotation_z += 180 * direction_multiplier
+            ball.rotation_z -= (hit_info.entity.world.y - ball.y) * 20 * 32 * direction_multiplier
+            ball.speed *= 1.1
+
+        else:
+            ball.rotation_z *= -abs(hit_info.world_normal.normalize()[1])
+
 
 
 
