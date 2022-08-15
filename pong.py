@@ -53,4 +53,13 @@ def update():
             ball.rotation_z *= -abs(hit_info.world_normal.normalized()[1])
 
 
+def reset():
+    ball.position = (0, 0, 0)
+    ball.rotation = (0, 0, 0)
+    ball.speed = 10
+    for paddle in (left_paddle, right_paddle):
+        paddle.collision = True
+        paddle.y = 0
+
+
 app.run()
